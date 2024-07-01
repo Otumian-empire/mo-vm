@@ -53,4 +53,11 @@
 - in a way it one shouldn't be bothered about actually popping (removing) from the stack since the value is either used or altered (on push)
 - in the registers defined, using enum, the last register, which is not a register in this sense, is a register count (capacity). This will be used to create the register array
 - relying on the register enum, we can use the enums to access the preferred register
--
+
+The above was when I was following the tutorial by `felixangell`
+
+## MY MAC
+
+- We have to update the instructions that we have. We will implement MOV, MUL, NEG, POW and any other we will come across in the future
+- We will read data (program) from file, parse it and execute it
+- we can try and mimic a test, we will add a program and its final value or data in the stack. we will compare the last value in the stack against the expected

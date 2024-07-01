@@ -7,12 +7,17 @@ typedef enum
     POP, // remove value from the stack
     ADD, // sum two values and push the result onto the stack
     SET, // assign a value onto a registers
-    HLT  // terminate the program
+    HLT, // terminate the program
     // we can add our later when we understand this
-    // MOV: move data from one register to another
-    // MUL: multiplication
-    // NEG: negate a value
-    // POW: raise to the pow
+    // MOV, // move data from one register to another
+    // MVS, // move data from stack to register
+    MUL,  // multiplication
+    NEG,  // negate a value
+    SQR,  // squares a number
+    POW,  // raise to the power, x is passed as value
+    SHOW, // print the stack to where the sp is
+    DIF,  // abs difference abs(b - a)
+    SUB,  // b - a
     // etc
 } InstructionSet;
 
@@ -32,16 +37,41 @@ typedef enum
 const int program[] = {
     PSH,
     5,
+    SQR,
+    SHOW,
+    // HLT,
     PSH,
     6,
+    PSH,
+    2,
+    SHOW,
+    POW,
+    SHOW,
+    // HLT,
     ADD,
-    POP,
+    SHOW,
+    PSH,
+    4,
+    MUL,
+    SHOW,
+    // POP,
+    NEG,
+    // HLT,
     PSH,
     1,
     PSH,
     -2,
+    SHOW,
     ADD,
+    SHOW,
     POP,
+    SHOW,
+    SUB,
+    SHOW,
+    PSH,
+    -1,
+    DIF,
+    SHOW,
     HLT,
 };
 
@@ -100,6 +130,105 @@ void halt()
     running = 0;
 }
 
+void mul()
+{
+    // mul is a binary operator, so we pop the stack twice
+    int a = pop();
+    int b = pop();
+
+    int result = a * b;
+
+    // push result onto the stack
+    push(result);
+}
+
+void neg()
+{
+    // neg is a unary operator, so we pop the stack once
+    int a = pop();
+
+    int result = a * -1;
+
+    // push result onto the stack
+    push(result);
+}
+
+void sqr()
+{
+    int a = pop();
+
+    int result = a * a;
+
+    // push result onto the stack
+    push(result);
+}
+
+void pow_()
+{
+    // this is in the form b^a, b exponent a
+    int a = pop();
+    int b = pop();
+
+    int result = b;
+
+    // must be >= 1 all the time or force it
+    if (a < 1)
+    {
+        a = 1;
+    }
+
+    if (a == 1)
+    {
+        push(result);
+    }
+
+    for (int i = 1; i < a; i++)
+    {
+        result *= b;
+    }
+
+    // push result onto the stack
+    push(result);
+}
+
+void dif()
+{
+    int a = pop();
+    int b = pop();
+
+    int result = b - a;
+
+    if (result < 0)
+    {
+        result *= -1;
+    }
+
+    push(result);
+}
+
+void sub()
+{
+    int a = pop();
+    int b = pop();
+
+    int result = b - a;
+
+    push(result);
+}
+
+void print_stack()
+{
+    for (int i = 0; i < sp + 1; i++)
+    {
+        printf("%d-> %d\n", i, stack[i]);
+    }
+}
+
+void print_register(int reg)
+{
+    printf("reg(%d)-> %d\n", reg, registers[reg]);
+}
+
 void eval(int instr)
 {
     switch (instr)
@@ -121,22 +250,37 @@ void eval(int instr)
         add();
         break;
 
+    case MUL:
+        mul();
+        break;
+
+    case NEG:
+        neg();
+        break;
+
+    case SHOW:
+        print_stack();
+        break;
+
+    case SQR:
+        sqr();
+        break;
+
+    case POW:
+        pow_();
+        break;
+
+    case DIF:
+        dif();
+        break;
+
+    case SUB:
+        sub();
+        break;
+
     default:
         break;
     }
-}
-
-void print_stack()
-{
-    for (int i = 0; i < sp + 1; i++)
-    {
-        printf("%d-> %d\n", i, stack[i]);
-    }
-}
-
-void print_register(int reg)
-{
-    printf("reg(%d)-> %d\n", reg, registers[reg]);
 }
 
 int main()
@@ -149,7 +293,7 @@ int main()
         // printf("IP: %d\n", instr); // print out current instruction
     }
 
-    print_stack();
+    // print_stack();
 
     return 0;
 }
