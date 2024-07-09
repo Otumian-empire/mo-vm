@@ -6,18 +6,19 @@ typedef enum
     PSH, // push (add) value onto the stack
     POP, // remove value from the stack
     ADD, // sum two values and push the result onto the stack
-    SET, // assign a value onto a registers
     HLT, // terminate the program
-    // we can add our later when we understand this
-    // MOV, // move data from one register to another
-    // MVS, // move data from stack to register
-    MUL,  // multiplication
-    NEG,  // negate a value
-    SQR,  // squares a number
-    POW,  // raise to the power, x is passed as value
-    SHOW, // print the stack to where the sp is
-    DIF,  // abs difference abs(b - a)
-    SUB,  // b - a
+    MUL, // multiplication
+    NEG, // negate a value
+    SQR, // squares a number
+    POW, // raise to the power, x is passed as value
+    SHW, // print the stack to where the sp is
+    DIF, // abs difference abs(b - a)
+    SUB, // b - a
+    SET, // assign a value to a registers
+    SHR, // print the value in a register
+    PSR, // push (add) value from a register onto the stack
+    MOV, // move data from one register to another
+    MVS, // move data from stack to register
     // etc
 } InstructionSet;
 
@@ -35,25 +36,64 @@ typedef enum
 
 // sample test program
 const int program[] = {
+    SET,
+    A,
+    10,
+    SET,
+    B,
+    5,
+    SHR,
+    B,
+    SHR,
+    A,
+    PSR,
+    A,
+    PSR,
+    B,
+    ADD,
+    SHW,
+    SHW,
+    MVS,
+    C,
+    SHR,
+    C,
+    SHW,
+    PSR,
+    C,
+    ADD,
+    MVS,
+    C,
+    SHW,
+    SHR,
+    C,
+    HLT,
+    MOV,
+    A,
+    C,
+    SHR,
+    A,
+    SHR,
+    C,
+    //
     PSH,
     5,
     SQR,
-    SHOW,
+    SHW,
     // HLT,
     PSH,
     6,
     PSH,
     2,
-    SHOW,
+    SHW,
     POW,
-    SHOW,
+    SHW,
     // HLT,
     ADD,
-    SHOW,
+    SHW,
     PSH,
     4,
     MUL,
-    SHOW,
+    SHW,
     // POP,
     NEG,
     // HLT,
@@ -61,17 +101,17 @@ const int program[] = {
     1,
     PSH,
     -2,
-    SHOW,
+    SHW,
     ADD,
-    SHOW,
+    SHW,
     POP,
-    SHOW,
+    SHW,
     SUB,
-    SHOW,
+    SHW,
     PSH,
     -1,
     DIF,
-    SHOW,
+    SHW,
     HLT,
 };
 
@@ -216,6 +256,39 @@ void sub()
     push(result);
 }
 
+void set()
+{
+    // ip should be pointing to the register and the next is the value
+    const int reg = fetch();
+    const int val = fetch();
+
+    registers[reg] = val;
+}
+
+void push_from_reg_to_stack()
+{
+    // ip should be pointing to the register
+    const int reg = fetch();
+    const int value = registers[reg];
+
+    push(value);
+}
+
+void mov()
+{
+    int reg1 = fetch();
+    int reg2 = fetch();
+
+    registers[reg2] = registers[reg1];
+}
+
+void move_from_stack_to_reg()
+{
+    int reg = fetch();
+
+    registers[reg] = stack[sp];
+}
+
 void print_stack()
 {
     for (int i = 0; i < sp + 1; i++)
@@ -224,8 +297,9 @@ void print_stack()
     }
 }
 
-void print_register(int reg)
+void print_register()
 {
+    const int reg = fetch();
     printf("reg(%d)-> %d\n", reg, registers[reg]);
 }
 
@@ -258,7 +332,7 @@ void eval(int instr)
         neg();
         break;
 
-    case SHOW:
+    case SHW:
         print_stack();
         break;
 
@@ -276,6 +350,26 @@ void eval(int instr)
 
     case SUB:
         sub();
+        break;
+
+    case SET:
+        set();
+        break;
+
+    case SHR:
+        print_register();
+        break;
+
+    case PSR:
+        push_from_reg_to_stack();
+        break;
+
+    case MOV:
+        mov();
+        break;
+
+    case MVS:
+        move_from_stack_to_reg();
         break;
 
     default:
